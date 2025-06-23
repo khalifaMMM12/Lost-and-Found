@@ -4,74 +4,10 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
-require 'config.php';
+require 'backend_report_found.php';
 
-$category = $description = $location = $date = '';
-$category_err = $description_err = $location_err = $date_err = $image_err = '';
-$success_msg = $error_msg = '';
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Validate category
-    if (empty(trim($_POST['category']))) {
-        $category_err = 'Please select a category.';
-    } else {
-        $category = trim($_POST['category']);
-    }
-    // Validate description
-    if (empty(trim($_POST['description']))) {
-        $description_err = 'Please enter a description.';
-    } else {
-        $description = trim($_POST['description']);
-    }
-    // Validate location
-    if (empty(trim($_POST['location']))) {
-        $location_err = 'Please enter the location.';
-    } else {
-        $location = trim($_POST['location']);
-    }
-    // Validate date
-    if (empty(trim($_POST['date']))) {
-        $date_err = 'Please select the date.';
-    } else {
-        $date = trim($_POST['date']);
-    }
-    // Handle image upload
-    $image_path = NULL;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] != UPLOAD_ERR_NO_FILE) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!in_array($_FILES['image']['type'], $allowed_types)) {
-            $image_err = 'Only JPG, PNG, and GIF files are allowed.';
-        } elseif ($_FILES['image']['size'] > 2 * 1024 * 1024) {
-            $image_err = 'Image size must be less than 2MB.';
-        } else {
-            $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-            $new_name = uniqid('img_', true) . '.' . $ext;
-            $upload_dir = 'uploads/';
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            $image_path = $upload_dir . $new_name;
-            if (!move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
-                $image_err = 'Failed to upload image.';
-            }
-        }
-    }
-    // Insert into database if no errors
-    if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err)) {
-        $sql = 'INSERT INTO items (user_id, type, description, location, date, status, image) VALUES (?, "found", ?, ?, ?, "pending", ?)';
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('issss', $_SESSION['user_id'], $description, $location, $date, $image_path);
-        if ($stmt->execute()) {
-            $success_msg = 'Found item reported successfully!';
-            $category = $description = $location = $date = '';
-        } else {
-            $error_msg = 'Something went wrong. Please try again.';
-        }
-        $stmt->close();
-    }
-}
-// Example categories (same as in report_lost.php)
-$categories = ['Electronics', 'Books', 'Clothing', 'Accessories', 'Documents', 'Other'];
+$vars = handle_report_found($_POST, $_FILES, $_SESSION);
+extract($vars);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,54 +15,89 @@ $categories = ['Electronics', 'Books', 'Clothing', 'Accessories', 'Documents', '
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Found Item - Lost and Found</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #f8f9fa; }
-        .report-form { max-width: 500px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="report-form">
-        <h2 class="mb-4 text-center">Report Found Item</h2>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow mb-8">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="dashboard.php" class="text-2xl font-bold text-blue-700">Lost & Found</a>
+            <div class="flex space-x-4 items-center">
+                <a href="dashboard.php" class="text-gray-700 hover:text-blue-700 font-medium">Dashboard</a>
+                <a href="search.php" class="text-gray-700 hover:text-blue-700 font-medium">Search</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="report_lost.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Lost</a>
+                    <a href="report_found.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Found</a>
+                    <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</a>
+                <?php else: ?>
+                    <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
+                    <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Report Found Item</h2>
         <?php if ($success_msg): ?>
-            <div class="alert alert-success"><?php echo $success_msg; ?></div>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <span class="block sm:inline"><?php echo $success_msg; ?></span>
+            </div>
         <?php elseif ($error_msg): ?>
-            <div class="alert alert-danger"><?php echo $error_msg; ?></div>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline"><?php echo $error_msg; ?></span>
+            </div>
         <?php endif; ?>
         <form action="" method="post" enctype="multipart/form-data" novalidate>
-            <div class="mb-3">
-                <label for="category" class="form-label">Category</label>
-                <select name="category" class="form-select <?php echo $category_err ? 'is-invalid' : ''; ?>">
-                    <option value="">Select category</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat; ?>" <?php if ($category == $cat) echo 'selected'; ?>><?php echo $cat; ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <div class="invalid-feedback"><?php echo $category_err; ?></div>
+            <div class="mb-4">
+                <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category</label>
+                <div class="relative">
+                    <select name="category" class="form-select block w-full px-3 py-2 border <?php echo $category_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select category</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat; ?>" <?php if ($category == $cat) echo 'selected'; ?>><?php echo $cat; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if ($category_err): ?>
+                        <p class="mt-2 text-sm text-red-600"><?php echo $category_err; ?></p>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea name="description" class="form-control <?php echo $description_err ? 'is-invalid' : ''; ?>" rows="3"><?php echo htmlspecialchars($description); ?></textarea>
-                <div class="invalid-feedback"><?php echo $description_err; ?></div>
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+                <textarea name="description" class="form-textarea block w-full px-3 py-2 border <?php echo $description_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" rows="3"><?php echo htmlspecialchars($description); ?></textarea>
+                <?php if ($description_err): ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo $description_err; ?></p>
+                <?php endif; ?>
             </div>
-            <div class="mb-3">
-                <label for="location" class="form-label">Location</label>
-                <input type="text" name="location" class="form-control <?php echo $location_err ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($location); ?>">
-                <div class="invalid-feedback"><?php echo $location_err; ?></div>
+            <div class="mb-4">
+                <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                <input type="text" name="location" class="form-input block w-full px-3 py-2 border <?php echo $location_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" value="<?php echo htmlspecialchars($location); ?>">
+                <?php if ($location_err): ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo $location_err; ?></p>
+                <?php endif; ?>
             </div>
-            <div class="mb-3">
-                <label for="date" class="form-label">Date Found</label>
-                <input type="date" name="date" class="form-control <?php echo $date_err ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($date); ?>">
-                <div class="invalid-feedback"><?php echo $date_err; ?></div>
+            <div class="mb-4">
+                <label for="date" class="block text-gray-700 text-sm font-bold mb-2">Date Found</label>
+                <input type="date" name="date" class="form-input block w-full px-3 py-2 border <?php echo $date_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" value="<?php echo htmlspecialchars($date); ?>">
+                <?php if ($date_err): ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo $date_err; ?></p>
+                <?php endif; ?>
             </div>
-            <div class="mb-3">
-                <label for="image" class="form-label">Image (optional, max 2MB)</label>
-                <input type="file" name="image" class="form-control <?php echo $image_err ? 'is-invalid' : ''; ?>" accept="image/*">
-                <div class="invalid-feedback"><?php echo $image_err; ?></div>
+            <div class="mb-4">
+                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image (optional, max 2MB)</label>
+                <input type="file" name="image" class="form-input block w-full px-3 py-2 border <?php echo $image_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" accept="image/*">
+                <?php if ($image_err): ?>
+                    <p class="mt-2 text-sm text-red-600"><?php echo $image_err; ?></p>
+                <?php endif; ?>
             </div>
-            <button type="submit" class="btn btn-success w-100">Submit</button>
-            <a href="dashboard.php" class="btn btn-link w-100 mt-2">Back to Dashboard</a>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200">Submit</button>
+            </div>
+            <div class="mt-4 text-center">
+                <a href="dashboard.php" class="text-blue-500 hover:text-blue-700 text-sm">Back to Dashboard</a>
+            </div>
         </form>
     </div>
 </body>
-</html> 
+</html>

@@ -14,14 +14,24 @@ CREATE TABLE IF NOT EXISTS users (
 -- Items table
 CREATE TABLE IF NOT EXISTS items (
     item_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NULL,
     type ENUM('lost', 'found') NOT NULL,
     description TEXT NOT NULL,
     location VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
     status ENUM('pending', 'approved', 'returned') DEFAULT 'pending',
-    image VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- Item Images table
+CREATE TABLE IF NOT EXISTS item_images (
+    image_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE
 );
 
 -- Notifications table

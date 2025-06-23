@@ -4,44 +4,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit;
 }
-require 'config.php';
-
-// Approve item
-if (isset($_GET['approve']) && is_numeric($_GET['approve'])) {
-    $item_id = intval($_GET['approve']);
-    $sql = 'UPDATE items SET status = "approved" WHERE item_id = ?';
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('i', $item_id);
-    $stmt->execute();
-    $stmt->close();
-    // Optionally, send notification to user
-}
-// Delete item
-if (isset($_GET['delete_item']) && is_numeric($_GET['delete_item'])) {
-    $item_id = intval($_GET['delete_item']);
-    $sql = 'DELETE FROM items WHERE item_id = ?';
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('i', $item_id);
-    $stmt->execute();
-    $stmt->close();
-}
-// Delete user
-if (isset($_GET['delete_user']) && is_numeric($_GET['delete_user'])) {
-    $user_id = intval($_GET['delete_user']);
-    $sql = 'DELETE FROM users WHERE user_id = ?';
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('i', $user_id);
-    $stmt->execute();
-    $stmt->close();
-}
-// Fetch pending items
-$sql = 'SELECT item_id, type, description, location, date, status, image FROM items WHERE status = "pending" ORDER BY date DESC';
-$result = $conn->query($sql);
-$pending_items = $result->fetch_all(MYSQLI_ASSOC);
-// Fetch users
-$sql = 'SELECT user_id, name, email, role FROM users ORDER BY user_id DESC';
-$result = $conn->query($sql);
-$users = $result->fetch_all(MYSQLI_ASSOC);
+require 'backend_admin_dashboard.php';
+admin_handle_actions();
+$pending_items = get_pending_items();
+$users = get_users();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,14 +15,30 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lost and Found</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #f8f9fa; }
         .admin-panel { max-width: 1100px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .table-img { max-width: 80px; max-height: 60px; object-fit: cover; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow mb-8">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="dashboard.php" class="text-2xl font-bold text-blue-700">Lost & Found</a>
+            <div class="flex space-x-4 items-center">
+                <a href="dashboard.php" class="text-gray-700 hover:text-blue-700 font-medium">Dashboard</a>
+                <a href="search.php" class="text-gray-700 hover:text-blue-700 font-medium">Search</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="report_lost.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Lost</a>
+                    <a href="report_found.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Found</a>
+                    <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</a>
+                <?php else: ?>
+                    <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
+                    <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
     <div class="admin-panel">
         <h2 class="mb-4">Admin Dashboard</h2>
         <a href="dashboard.php" class="btn btn-link mb-3">Back to Dashboard</a>
@@ -139,4 +121,4 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 </body>
-</html> 
+</html>
