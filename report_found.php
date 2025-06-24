@@ -16,27 +16,54 @@ extract($vars);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Found Item - Lost and Found</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/79a49acde1.js" crossorigin="anonymous"></script>
+
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-white shadow mb-8">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="dashboard.php" class="text-2xl font-bold text-blue-700">Lost & Found</a>
-            <div class="flex space-x-4 items-center">
-                <a href="dashboard.php" class="text-gray-700 hover:text-blue-700 font-medium">Dashboard</a>
-                <a href="search.php" class="text-gray-700 hover:text-blue-700 font-medium">Search</a>
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="report_lost.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Lost</a>
-                    <a href="report_found.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Found</a>
-                    <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</a>
-                <?php else: ?>
-                    <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
-                    <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
-    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+   <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="dashboard.php" class="text-2xl font-bold text-black">Lost & Found</a>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex space-x-4 items-center text-sm md:text-base">
+        <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
+        <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
+        <?php if (isset($_SESSION['user_id'])): ?>
+          <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
+          <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+        <?php else: ?>
+          <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
+          <a href="login.php" class="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+        <?php endif; ?>
+      </div>
+
+      <!-- Hamburger -->
+      <button id="hamburgerBtn" class="md:hidden text-gray-800 text-2xl focus:outline-none">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+
+    <!-- Animated Mobile Menu -->
+    <div id="mobileMenu" class="md:hidden overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out px-4 space-y-2">
+      <a href="dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
+      <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
+      <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
+        <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+        <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+      <?php else: ?>
+        <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
+        <a href="login.php" class="block px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+      <?php endif; ?>
+    </div>
+  </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-10">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h2 class="text-2xl font-semibold mb-6 text-center">Report Found Item</h2>
+
         <?php if ($success_msg): ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Success!</strong>
@@ -48,56 +75,124 @@ extract($vars);
                 <span class="block sm:inline"><?php echo $error_msg; ?></span>
             </div>
         <?php endif; ?>
+
         <form action="" method="post" enctype="multipart/form-data" novalidate>
-            <div class="mb-4">
-                <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category</label>
-                <div class="relative">
-                    <select name="category" class="form-select block w-full px-3 py-2 border <?php echo $category_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500">
+            <div class="grid sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select name="category" class="block w-full px-3 py-2 border <?php echo $category_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black">
                         <option value="">Select category</option>
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat; ?>" <?php if ($category == $cat) echo 'selected'; ?>><?php echo $cat; ?></option>
+                            <option value="<?= $cat ?>" <?= $category == $cat ? 'selected' : '' ?>><?= $cat ?></option>
                         <?php endforeach; ?>
                     </select>
                     <?php if ($category_err): ?>
-                        <p class="mt-2 text-sm text-red-600"><?php echo $category_err; ?></p>
+                        <p class="text-red-500 text-sm mt-1"><?= $category_err ?></p>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Found</label>
+                    <input type="date" name="date" class="block w-full px-3 py-2 border <?php echo $date_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black" value="<?= htmlspecialchars($date) ?>">
+                    <?php if ($date_err): ?>
+                        <p class="text-red-500 text-sm mt-1"><?= $date_err ?></p>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" name="location" class="block w-full px-3 py-2 border <?php echo $location_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black" value="<?= htmlspecialchars($location) ?>">
+                    <?php if ($location_err): ?>
+                        <p class="text-red-500 text-sm mt-1"><?= $location_err ?></p>
+                    <?php endif; ?>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Image (optional)</label>
+                        <div class="w-40 h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded bg-gray-50 relative cursor-pointer hover:border-black transition" id="imageUploadBox">
+                            <input type="file" name="image" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" tabindex="-1">
+                            <span id="uploadIcon" class="absolute inset-0 flex items-center justify-center text-4xl text-gray-300 pointer-events-auto" style="z-index:2;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </span>
+                            <img id="imagePreview" src="#" class="hidden absolute inset-0 w-full h-full object-cover rounded pointer-events-auto" alt="Preview" style="z-index:3;">
+                            <button type="button" id="removeImage" class="hidden absolute top-1 right-1 bg-white border border-gray-300 rounded-full text-sm px-2 py-0.5 hover:bg-gray-100 pointer-events-auto" style="z-index:4;">&times;</button>
+                        </div>
+                        <?php if ($image_err): ?>
+                            <p class="text-red-500 text-sm mt-1"><?= $image_err ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" rows="6" class="block w-full px-3 py-2 border <?php echo $description_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black"><?= htmlspecialchars($description) ?></textarea>
+                    <?php if ($description_err): ?>
+                        <p class="text-red-500 text-sm mt-1"><?= $description_err ?></p>
                     <?php endif; ?>
                 </div>
             </div>
-            <div class="mb-4">
-                <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
-                <textarea name="description" class="form-textarea block w-full px-3 py-2 border <?php echo $description_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" rows="3"><?php echo htmlspecialchars($description); ?></textarea>
-                <?php if ($description_err): ?>
-                    <p class="mt-2 text-sm text-red-600"><?php echo $description_err; ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="mb-4">
-                <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
-                <input type="text" name="location" class="form-input block w-full px-3 py-2 border <?php echo $location_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" value="<?php echo htmlspecialchars($location); ?>">
-                <?php if ($location_err): ?>
-                    <p class="mt-2 text-sm text-red-600"><?php echo $location_err; ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="mb-4">
-                <label for="date" class="block text-gray-700 text-sm font-bold mb-2">Date Found</label>
-                <input type="date" name="date" class="form-input block w-full px-3 py-2 border <?php echo $date_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" value="<?php echo htmlspecialchars($date); ?>">
-                <?php if ($date_err): ?>
-                    <p class="mt-2 text-sm text-red-600"><?php echo $date_err; ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="mb-4">
-                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image (optional, max 2MB)</label>
-                <input type="file" name="image" class="form-input block w-full px-3 py-2 border <?php echo $image_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500" accept="image/*">
-                <?php if ($image_err): ?>
-                    <p class="mt-2 text-sm text-red-600"><?php echo $image_err; ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="flex items-center justify-between">
-                <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition duration-200">Submit</button>
-            </div>
-            <div class="mt-4 text-center">
-                <a href="dashboard.php" class="text-blue-500 hover:text-blue-700 text-sm">Back to Dashboard</a>
+
+            <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition">Submit Report</button>
+                <a href="dashboard.php" class="text-sm text-blue-500 hover:text-blue-700">← Back to Dashboard</a>
             </div>
         </form>
     </div>
+    </main>
+
+    <script>
+        function resetImageUploadBox() {
+            document.querySelectorAll('#uploadIcon').forEach(icon => icon.classList.remove('hidden'));
+            document.querySelectorAll('#imagePreview').forEach(preview => preview.classList.add('hidden'));
+            document.querySelectorAll('#removeImage').forEach(btn => btn.classList.add('hidden'));
+        }
+        // Always reset state on page load
+        window.addEventListener('DOMContentLoaded', resetImageUploadBox);
+
+        // Only open file dialog when clicking the plus icon or empty area
+        document.getElementById('uploadIcon').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('imageInput').click();
+        });
+        // Prevent preview and remove from opening file dialog
+        document.getElementById('imagePreview').addEventListener('click', function(e) { e.stopPropagation(); });
+        document.getElementById('removeImage').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const input = document.getElementById('imageInput');
+            input.value = '';
+            resetImageUploadBox();
+        });
+        // Remove onclick from container
+        document.getElementById('imageUploadBox').onclick = null;
+
+        document.getElementById('imageInput').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagePreview');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const removeBtn = document.getElementById('removeImage');
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.src = event.target.result;
+                    preview.classList.remove('hidden');
+                    uploadIcon.classList.add('hidden');
+                    removeBtn.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                resetImageUploadBox();
+            }
+        });
+
+        const btn = document.getElementById('hamburgerBtn');
+        const menu = document.getElementById('mobileMenu');
+        btn.addEventListener('click', () => {
+            const isHidden = menu.classList.contains('max-h-0');
+            if (isHidden) {
+                menu.classList.remove('max-h-0', 'opacity-0');
+                menu.classList.add('max-h-screen', 'opacity-100');
+            } else {
+                menu.classList.remove('max-h-screen', 'opacity-100');
+                menu.classList.add('max-h-0', 'opacity-0');
+            }
+        });
+    </script>
 </body>
 </html>

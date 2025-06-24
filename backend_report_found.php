@@ -41,18 +41,27 @@ function handle_report_found($post, $files, $session) {
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
-                $image_path = $upload_dir . $new_name;
-                if (!move_uploaded_file($files['image']['tmp_name'], $image_path)) {
+                $image_path = $new_name; // Only save the filename
+                if (!move_uploaded_file($files['image']['tmp_name'], $upload_dir. $new_name)) {
                     $image_err = 'Failed to upload image.';
                 }
             }
         }
         if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err)) {
             global $conn;
-            $sql = 'INSERT INTO items (user_id, type, description, location, date, status, image) VALUES (?, "found", ?, ?, ?, "pending", ?)';
+            $sql = 'INSERT INTO items (user_id, type, description, location, date, status) VALUES (?, "found", ?, ?, ?, "pending")';
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('issss', $session['user_id'], $description, $location, $date, $image_path);
+            $stmt->bind_param('isss', $session['user_id'], $description, $location, $date);
             if ($stmt->execute()) {
+                $item_id = $stmt->insert_id;
+                // Insert image if uploaded
+                if ($image_path) {
+                    $img_sql = 'INSERT INTO item_images (item_id, image_path) VALUES (?, ?)';
+                    $img_stmt = $conn->prepare($img_sql);
+                    $img_stmt->bind_param('is', $item_id, $image_path);
+                    $img_stmt->execute();
+                    $img_stmt->close();
+                }
                 $success_msg = 'Found item reported successfully!';
                 $category = $description = $location = $date = '';
             } else {
