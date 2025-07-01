@@ -15,7 +15,7 @@ $users = get_users();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lost and Found</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./src/output.css">
     <style>
         .admin-panel { max-width: 1100px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .table-img { max-width: 80px; max-height: 60px; object-fit: cover; }
