@@ -1,5 +1,5 @@
 <?php
-session_start();
+require 'config.php';
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -31,7 +31,7 @@ extract($vars);
         <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
-          <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="report_found.php" class="text-green-700 font-semibold border-b-2 border-green-400"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -79,59 +79,58 @@ extract($vars);
         <form action="" method="post" enctype="multipart/form-data" novalidate>
             <div class="grid sm:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="category" class="block w-full px-3 py-2 border <?php echo $category_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+                    <label class="block text-sm font-medium text-green-700 mb-1">Category</label>
+                    <select name="category" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
                         <option value="">Select category</option>
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?= $cat ?>" <?= $category == $cat ? 'selected' : '' ?>><?= $cat ?></option>
                         <?php endforeach; ?>
                     </select>
                     <?php if ($category_err): ?>
-                        <p class="text-red-500 text-sm mt-1"><?= $category_err ?></p>
+                        <p class="text-green-600 text-sm mt-1"><?= $category_err ?></p>
                     <?php endif; ?>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Found</label>
-                    <input type="date" name="date" class="block w-full px-3 py-2 border <?php echo $date_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black" value="<?= htmlspecialchars($date) ?>">
+                    <label class="block text-sm font-medium text-green-700 mb-1">Date Found</label>
+                    <input type="date" name="date" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($date) ?>">
                     <?php if ($date_err): ?>
-                        <p class="text-red-500 text-sm mt-1"><?= $date_err ?></p>
+                        <p class="text-green-600 text-sm mt-1"><?= $date_err ?></p>
                     <?php endif; ?>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                    <input type="text" name="location" class="block w-full px-3 py-2 border <?php echo $location_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black" value="<?= htmlspecialchars($location) ?>">
+                    <label class="block text-sm font-medium text-green-700 mb-1">Location</label>
+                    <input type="text" name="location" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($location) ?>">
                     <?php if ($location_err): ?>
-                        <p class="text-red-500 text-sm mt-1"><?= $location_err ?></p>
+                        <p class="text-green-600 text-sm mt-1"><?= $location_err ?></p>
                     <?php endif; ?>
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Image (optional)</label>
-                        <div class="w-40 h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded bg-gray-50 relative cursor-pointer hover:border-black transition" id="imageUploadBox">
+                        <label class="block text-sm font-medium text-green-700 mb-1">Image (optional)</label>
+                        <div class="w-40 h-40 flex items-center justify-center border-2 border-dashed border-green-200 bg-green-50 relative cursor-pointer hover:border-green-300 transition" id="imageUploadBox">
                             <input type="file" name="image" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" tabindex="-1">
-                            <span id="uploadIcon" class="absolute inset-0 flex items-center justify-center text-4xl text-gray-300 pointer-events-auto" style="z-index:2;">
+                            <span id="uploadIcon" class="absolute inset-0 flex items-center justify-center text-4xl text-green-200 pointer-events-auto" style="z-index:2;">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-12 h-12">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                             </span>
                             <img id="imagePreview" src="#" class="hidden absolute inset-0 w-full h-full object-cover rounded pointer-events-auto" alt="Preview" style="z-index:3;">
-                            <button type="button" id="removeImage" class="hidden absolute top-1 right-1 bg-white border border-gray-300 rounded-full text-sm px-2 py-0.5 hover:bg-gray-100 pointer-events-auto" style="z-index:4;">&times;</button>
+                            <button type="button" id="removeImage" class="hidden absolute top-1 right-1 bg-white border border-green-200 rounded-full text-sm px-2 py-0.5 hover:bg-green-100 pointer-events-auto" style="z-index:4;">&times;</button>
                         </div>
                         <?php if ($image_err): ?>
-                            <p class="text-red-500 text-sm mt-1"><?= $image_err ?></p>
+                            <p class="text-green-600 text-sm mt-1"><?= $image_err ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea name="description" rows="6" class="block w-full px-3 py-2 border <?php echo $description_err ? 'border-red-500' : 'border-gray-300'; ?> rounded-md focus:outline-none focus:ring-2 focus:ring-black"><?= htmlspecialchars($description) ?></textarea>
+                    <label class="block text-sm font-medium text-green-700 mb-1">Description</label>
+                    <textarea name="description" rows="6" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200"><?= htmlspecialchars($description) ?></textarea>
                     <?php if ($description_err): ?>
-                        <p class="text-red-500 text-sm mt-1"><?= $description_err ?></p>
+                        <p class="text-green-600 text-sm mt-1"><?= $description_err ?></p>
                     <?php endif; ?>
                 </div>
             </div>
-
             <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition">Submit Report</button>
-                <a href="dashboard.php" class="text-sm text-blue-500 hover:text-blue-700">← Back to Dashboard</a>
+                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-green-100 text-green-900 rounded-md hover:bg-green-200 transition">Submit Report</button>
+                <a href="dashboard.php" class="text-sm text-green-500 hover:text-green-700">← Back to Dashboard</a>
             </div>
         </form>
     </div>

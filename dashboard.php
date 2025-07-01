@@ -1,5 +1,5 @@
 <?php
-session_start();
+require 'config.php';
 require 'backend_dashboard.php';
 $items = get_dashboard_items();
 ?>

@@ -1,5 +1,4 @@
 <?php
-session_start();
 require 'config.php';
 
 $email = $password = '';
@@ -173,20 +172,6 @@ const btn = document.getElementById('hamburgerBtn');
         menu.classList.add('max-h-0', 'opacity-0');
       }
     });
-
-    function togglePassword(fieldId, btn) {
-      const input = document.getElementById(fieldId);
-      const icon = btn.querySelector('i');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
 </script>
 </body>
 </html>
