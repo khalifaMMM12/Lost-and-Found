@@ -124,7 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if ($password_err): ?><p class="mt-1 text-sm text-red-500"><?php echo $password_err; ?></p><?php endif; ?>
       </div>
 
-      <button type="submit" class="w-full px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition duration-200">Login</button>
+      <div class="flex flex-col gap-2 mt-4">
+        <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-900 transition">Login</button>
+        <a href="admin_login.php" class="w-full text-center py-2 rounded border border-blue-700 text-blue-700 hover:bg-blue-50 transition font-semibold">Admin Login</a>
+      </div>
 
       <p class="mt-4 text-center text-sm text-gray-600">Don't have an account? 
         <a href="register.php" class="text-black hover:underline">Register</a>

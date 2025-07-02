@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: admin_login.php');
     exit;
 }
 require 'backend_admin_dashboard.php';
@@ -28,14 +28,8 @@ $users = get_users();
             <div class="flex space-x-4 items-center">
                 <a href="dashboard.php" class="text-gray-700 hover:text-blue-700 font-medium">Dashboard</a>
                 <a href="search.php" class="text-gray-700 hover:text-blue-700 font-medium">Search</a>
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="report_lost.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Lost</a>
-                    <a href="report_found.php" class="text-gray-700 hover:text-blue-700 font-medium">Report Found</a>
-                    <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</a>
-                <?php else: ?>
-                    <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
-                    <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
-                <?php endif; ?>
+                <a href="admin_dashboard.php" class="text-blue-700 font-semibold border-b-2 border-blue-400">Admin Dashboard</a>
+                <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Admin Logout</a>
             </div>
         </div>
     </nav>
@@ -115,6 +109,43 @@ $users = get_users();
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr><td colspan="5" class="text-center">No users found.</td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <h4 class="mt-8">Potential Lost & Found Matches</h4>
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Lost Description</th>
+                        <th>Lost Location</th>
+                        <th>Found Description</th>
+                        <th>Found Location</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php 
+                $matches = get_lost_found_matches();
+                if (count($matches) > 0):
+                    foreach ($matches as $match): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($match['lost_description']) ?></td>
+                            <td><?= htmlspecialchars($match['lost_location']) ?></td>
+                            <td><?= htmlspecialchars($match['found_description']) ?></td>
+                            <td><?= htmlspecialchars($match['found_location']) ?></td>
+                            <td>
+                                <form method="post" action="">
+                                    <input type="hidden" name="match_lost_id" value="<?= $match['lost_id'] ?>">
+                                    <input type="hidden" name="match_found_id" value="<?= $match['found_id'] ?>">
+                                    <button type="submit" name="approve_match" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">Approve & Notify</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach;
+                else: ?>
+                    <tr><td colspan="5" class="text-center">No matches found.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
