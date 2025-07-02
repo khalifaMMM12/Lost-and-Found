@@ -12,9 +12,10 @@ function admin_handle_actions() {
         $stmt->execute();
         $stmt->close();
     }
-    // Delete item
+    // Delete item and all related data (images, notifications) via ON DELETE CASCADE
     if (isset($_GET['delete_item']) && is_numeric($_GET['delete_item'])) {
         $item_id = intval($_GET['delete_item']);
+        // This will also delete related item_images and notifications due to ON DELETE CASCADE
         $sql = 'DELETE FROM items WHERE item_id = ?';
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('i', $item_id);
@@ -68,7 +69,14 @@ function get_pending_items() {
             LEFT JOIN item_images img ON img.item_id = i.item_id AND img.image_id = first_img.min_image_id
             WHERE i.status = "pending" ORDER BY i.date DESC';
     $result = $conn->query($sql);
-    return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $items = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    // Fix image path for display
+    foreach ($items as &$item) {
+        if (!empty($item['image'])) {
+            $item['image'] = 'uploads/' . ltrim($item['image'], '/');
+        }
+    }
+    return $items;
 }
 
 function get_users() {

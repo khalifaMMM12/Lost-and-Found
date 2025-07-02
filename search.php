@@ -44,6 +44,9 @@ $items = get_search_items([
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
           <a href="login.php" class="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+          <?php endif; ?>
+          <a href="admin_login.php" class="ml-2 px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
+          <?php if (!isset($_SESSION['admin_id'])): ?>
         <?php endif; ?>
       </div>
 
@@ -64,6 +67,9 @@ $items = get_search_items([
       <?php else: ?>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
         <a href="login.php" class="block px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+      <?php endif; ?>
+      <?php if (!isset($_SESSION['admin_id'])): ?>
+        <a href="admin_login.php" class="block px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
       <?php endif; ?>
     </div>
   </nav>

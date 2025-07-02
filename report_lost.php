@@ -33,11 +33,14 @@ extract($vars);
         <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-blue-700 font-semibold border-b-2 border-blue-400"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
-          <a href="report_found.php" class="text-gray-700 hover:text-blue-700 font-medium"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
-          <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+          <a href="report_found.php" class="text-gray-700 font-semibold hover:text-green-700 font-medium"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
-          <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
-          <a href="login.php" class="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+          <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
+          <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
+        <?php endif; ?>
+        <a href="admin_login.php" class="ml-2 px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
+        <?php if (!isset($_SESSION['admin_id'])): ?>
         <?php endif; ?>
       </div>
 
@@ -58,6 +61,9 @@ extract($vars);
       <?php else: ?>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
         <a href="login.php" class="block px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
+      <?php endif; ?>
+      <?php if (!isset($_SESSION['admin_id'])): ?>
+        <a href="admin_login.php" class="block px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
       <?php endif; ?>
     </div>
   </nav>
