@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS items (
     description TEXT NOT NULL,
     location VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
+    contact_phone VARCHAR(20) NULL,
+    contact_email VARCHAR(100) NULL,
     status ENUM('pending', 'approved', 'returned') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

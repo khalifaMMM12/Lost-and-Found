@@ -11,7 +11,7 @@ function get_search_items($filters) {
     $filter_date = isset($filters['date']) ? trim($filters['date']) : '';
     $filter_location = isset($filters['location']) ? trim($filters['location']) : '';
 
-    $query = "SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, 
+    $query = "SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, i.contact_phone, i.contact_email,
         (SELECT img.image_path FROM item_images img WHERE img.item_id = i.item_id LIMIT 1) as image
         FROM items i WHERE i.status IN ('approved', 'pending')";
     $params = [];

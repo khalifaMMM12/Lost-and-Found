@@ -3,7 +3,7 @@ require_once 'config.php';
 
 function get_dashboard_items() {
     global $conn;
-    $sql = 'SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, GROUP_CONCAT(img.image_path) as images
+    $sql = 'SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, i.contact_phone, i.contact_email, GROUP_CONCAT(img.image_path) as images
         FROM items i
         LEFT JOIN item_images img ON i.item_id = img.item_id
         GROUP BY i.item_id

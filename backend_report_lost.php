@@ -2,8 +2,8 @@
 require_once 'config.php';
 
 function handle_report_lost($post, $files, $session) {
-    $category = $description = $location = $date = '';
-    $category_err = $description_err = $location_err = $date_err = $image_err = '';
+    $category = $description = $location = $date = $contact_phone = $contact_email = '';
+    $category_err = $description_err = $location_err = $date_err = $image_err = $contact_phone_err = $contact_email_err = '';
     $success_msg = $error_msg = '';
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -27,6 +27,30 @@ function handle_report_lost($post, $files, $session) {
         } else {
             $date = trim($post['date']);
         }
+        
+        // Contact details validation
+        $contact_phone = trim($post['contact_phone'] ?? '');
+        $contact_email = trim($post['contact_email'] ?? '');
+        
+        // At least one contact method is required
+        if (empty($contact_phone) && empty($contact_email)) {
+            $contact_phone_err = 'Please provide either a phone number or email address for contact.';
+        }
+        
+        // Validate phone number if provided
+        if (!empty($contact_phone)) {
+            if (!preg_match('/^[\+]?[0-9\s\-\(\)]{10,15}$/', $contact_phone)) {
+                $contact_phone_err = 'Please enter a valid phone number.';
+            }
+        }
+        
+        // Validate email if provided
+        if (!empty($contact_email)) {
+            if (!filter_var($contact_email, FILTER_VALIDATE_EMAIL)) {
+                $contact_email_err = 'Please enter a valid email address.';
+            }
+        }
+        
         $image_path = NULL;
         if (isset($files['image']) && $files['image']['error'] != UPLOAD_ERR_NO_FILE) {
             $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -47,11 +71,11 @@ function handle_report_lost($post, $files, $session) {
                 }
             }
         }
-        if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err)) {
+        if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err) && empty($contact_phone_err) && empty($contact_email_err)) {
             global $conn;
-            $sql = 'INSERT INTO items (user_id, type, description, location, date, status) VALUES (?, "lost", ?, ?, ?, "pending")';
+            $sql = 'INSERT INTO items (user_id, type, description, location, date, contact_phone, contact_email, status) VALUES (?, "lost", ?, ?, ?, ?, ?, "pending")';
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('isss', $session['user_id'], $description, $location, $date);
+            $stmt->bind_param('isssss', $session['user_id'], $description, $location, $date, $contact_phone, $contact_email);
             if ($stmt->execute()) {
                 $item_id = $stmt->insert_id;
                 // Insert image if uploaded
@@ -63,7 +87,7 @@ function handle_report_lost($post, $files, $session) {
                     $img_stmt->close();
                 }
                 $success_msg = 'Lost item reported successfully!';
-                $category = $description = $location = $date = '';
+                $category = $description = $location = $date = $contact_phone = $contact_email = '';
             } else {
                 $error_msg = 'Something went wrong. Please try again.';
             }
@@ -71,5 +95,5 @@ function handle_report_lost($post, $files, $session) {
         }
     }
     $categories = ['Electronics', 'Books', 'Clothing', 'Accessories', 'Documents', 'Other'];
-    return compact('category', 'description', 'location', 'date', 'category_err', 'description_err', 'location_err', 'date_err', 'image_err', 'success_msg', 'error_msg', 'categories');
+    return compact('category', 'description', 'location', 'date', 'contact_phone', 'contact_email', 'category_err', 'description_err', 'location_err', 'date_err', 'image_err', 'contact_phone_err', 'contact_email_err', 'success_msg', 'error_msg', 'categories');
 }

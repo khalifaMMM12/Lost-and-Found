@@ -1,5 +1,6 @@
 <?php
 session_start();
+require 'config.php';
 require 'backend_search.php';
 
 $categories = ['Electronics', 'Books', 'Clothing', 'Accessories', 'Documents', 'Other'];
@@ -31,22 +32,33 @@ $items = get_search_items([
    <!-- Navbar -->
   <nav class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-      <a href="dashboard.php" class="text-2xl font-bold text-black">Lost & Found</a>
+      <a href="<?php echo isset($_SESSION['admin_id']) ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="text-2xl font-bold text-black">Lost & Found</a>
 
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-4 items-center text-sm md:text-base">
-        <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
-        <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['admin_id'])): ?>
+          <!-- Admin Navigation -->
+          <a href="admin_dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
+          <a href="search.php" class="text-blue-700 font-semibold border-b-2 border-blue-400"><i class="fas fa-search mr-1"></i>Search</a>
+          <a href="admin_dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-cog mr-1"></i>Admin Dashboard</a>
+          <a href="logout.php" class="ml-2 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"><i class="fas fa-sign-out-alt mr-1"></i>Admin Logout</a>
+        <?php elseif (isset($_SESSION['user_id'])): ?>
+          <!-- User Navigation -->
+          <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
+          <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
           <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
+          <!-- Guest Navigation -->
+          <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
+          <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
           <a href="login.php" class="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
-          <?php endif; ?>
+        <?php endif; ?>
+        
+        <?php if (!isset($_SESSION['admin_id']) && !isset($_SESSION['user_id'])): ?>
           <a href="admin_login.php" class="ml-2 px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
-          <?php if (!isset($_SESSION['admin_id'])): ?>
         <?php endif; ?>
       </div>
 
@@ -58,17 +70,25 @@ $items = get_search_items([
 
     <!-- Animated Mobile Menu -->
     <div id="mobileMenu" class="md:hidden overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out px-4 space-y-2">
-      <a href="dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
-      <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
-      <?php if (isset($_SESSION['user_id'])): ?>
+      <?php if (isset($_SESSION['admin_id'])): ?>
+        <!-- Admin Mobile Navigation -->
+        <a href="admin_dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
+        <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
+        <a href="admin_dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-cog mr-1"></i>Admin Dashboard</a>
+        <a href="logout.php" class="block px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"><i class="fas fa-sign-out-alt mr-1"></i>Admin Logout</a>
+      <?php elseif (isset($_SESSION['user_id'])): ?>
+        <!-- User Mobile Navigation -->
+        <a href="dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
+        <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
         <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
         <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
       <?php else: ?>
+        <!-- Guest Mobile Navigation -->
+        <a href="dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
+        <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
         <a href="login.php" class="block px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-black transition"><i class="fas fa-sign-in-alt mr-1"></i>Login</a>
-      <?php endif; ?>
-      <?php if (!isset($_SESSION['admin_id'])): ?>
         <a href="admin_login.php" class="block px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition">Admin Login</a>
       <?php endif; ?>
     </div>
@@ -136,6 +156,31 @@ $items = get_search_items([
               <p class="text-gray-600"><?= htmlspecialchars($item['description']) ?></p>
               <p class="mt-2 text-sm text-gray-500"><strong>Location:</strong> <?= htmlspecialchars($item['location']) ?></p>
               <p class="mt-1 text-sm text-gray-500"><strong>Date:</strong> <?= htmlspecialchars($item['date']) ?></p>
+              
+              <!-- Contact Details -->
+              <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                <h6 class="text-sm font-semibold text-gray-700 mb-2">Contact Information:</h6>
+                <?php if (!empty($item['contact_phone'])): ?>
+                  <p class="text-sm text-gray-600 mb-1">
+                    <i class="fas fa-phone mr-2 text-gray-500"></i>
+                    <a href="tel:<?= htmlspecialchars($item['contact_phone']) ?>" class="text-blue-600 hover:text-blue-800">
+                      <?= htmlspecialchars($item['contact_phone']) ?>
+                    </a>
+                  </p>
+                <?php endif; ?>
+                <?php if (!empty($item['contact_email'])): ?>
+                  <p class="text-sm text-gray-600">
+                    <i class="fas fa-envelope mr-2 text-gray-500"></i>
+                    <a href="mailto:<?= htmlspecialchars($item['contact_email']) ?>" class="text-blue-600 hover:text-blue-800">
+                      <?= htmlspecialchars($item['contact_email']) ?>
+                    </a>
+                  </p>
+                <?php endif; ?>
+                <?php if (empty($item['contact_phone']) && empty($item['contact_email'])): ?>
+                  <p class="text-sm text-gray-500 italic">No contact information provided</p>
+                <?php endif; ?>
+              </div>
+              
               <div class="flex flex-wrap gap-2 mt-3">
                 <span class="bg-<?= $item['type'] === 'lost' ? 'red' : 'green' ?>-100 text-<?= $item['type'] === 'lost' ? 'red' : 'green' ?>-700 text-xs font-medium px-3 py-1 rounded-full">
                   <?= htmlspecialchars($item['type']) ?>

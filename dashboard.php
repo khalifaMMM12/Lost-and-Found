@@ -80,7 +80,32 @@ $items = get_dashboard_items();
             <h3 class="font-semibold text-lg text-gray-800 mb-1"><?php echo htmlspecialchars($item['description']); ?></h3>
             <p class="text-sm text-gray-700 mb-1"><strong>Location:</strong> <?php echo htmlspecialchars($item['location']); ?></p>
             <p class="text-sm text-gray-600 mb-1"><strong>Date:</strong> <?php echo htmlspecialchars($item['date']); ?></p>
-            <p class="text-xs text-gray-500"><strong>Status:</strong> <?php echo htmlspecialchars($item['status']); ?></p>
+            
+            <!-- Contact Details -->
+            <div class="mt-2 p-2 bg-gray-50 rounded text-xs">
+              <p class="text-gray-600 font-semibold mb-1">Contact:</p>
+              <?php if (!empty($item['contact_phone'])): ?>
+                <p class="text-gray-600 mb-1">
+                  <i class="fas fa-phone mr-1 text-gray-500"></i>
+                  <a href="tel:<?php echo htmlspecialchars($item['contact_phone']); ?>" class="text-blue-600 hover:text-blue-800">
+                    <?php echo htmlspecialchars($item['contact_phone']); ?>
+                  </a>
+                </p>
+              <?php endif; ?>
+              <?php if (!empty($item['contact_email'])): ?>
+                <p class="text-gray-600">
+                  <i class="fas fa-envelope mr-1 text-gray-500"></i>
+                  <a href="mailto:<?php echo htmlspecialchars($item['contact_email']); ?>" class="text-blue-600 hover:text-blue-800">
+                    <?php echo htmlspecialchars($item['contact_email']); ?>
+                  </a>
+                </p>
+              <?php endif; ?>
+              <?php if (empty($item['contact_phone']) && empty($item['contact_email'])): ?>
+                <p class="text-gray-500 italic">No contact info</p>
+              <?php endif; ?>
+            </div>
+            
+            <p class="text-xs text-gray-500 mt-2"><strong>Status:</strong> <?php echo htmlspecialchars($item['status']); ?></p>
           </div>
         </div>
       <?php endforeach; ?>

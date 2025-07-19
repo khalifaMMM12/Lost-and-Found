@@ -16,6 +16,7 @@ $users = get_users();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lost and Found</title>
   <link rel="stylesheet" href="./src/output.css">
+  <script src="https://kit.fontawesome.com/79a49acde1.js" crossorigin="anonymous"></script>
     <style>
         .admin-panel { max-width: 1100px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .table-img { max-width: 80px; max-height: 60px; object-fit: cover; }
@@ -26,10 +27,10 @@ $users = get_users();
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="dashboard.php" class="text-2xl font-bold text-black">Lost & Found</a>
             <div class="flex space-x-4 items-center text-sm md:text-base">
-                <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition">Dashboard</a>
-                <a href="search.php" class="text-gray-800 hover:text-black font-medium transition">Search</a>
-                <a href="admin_dashboard.php" class="text-blue-700 font-semibold border-b-2 border-blue-400">Admin Dashboard</a>
-                <a href="logout.php" class="ml-2 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition">Admin Logout</a>
+                <a href="admin_dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
+                <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
+                <a href="admin_dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-cog mr-1"></i>Admin Dashboard</a>
+                <a href="logout.php" class="block px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"><i class="fas fa-sign-out-alt mr-1"></i>Admin Logout</a>
             </div>
         </div>
     </nav>

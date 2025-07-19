@@ -34,7 +34,7 @@ extract($vars);
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-blue-700 font-semibold border-b-2 border-blue-400"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-gray-700 font-semibold hover:text-green-700 font-medium"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
-          <a href="logout.php" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+          <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</a>
           <a href="login.php" class="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Login</a>
@@ -134,6 +134,29 @@ extract($vars);
           <?php if ($description_err): ?>
             <p class="text-blue-600 text-sm mt-1"><?php echo $description_err; ?></p>
           <?php endif; ?>
+        </div>
+      </div>
+      
+      <!-- Contact Details Section -->
+      <div class="mt-6 border-t border-blue-200 pt-6">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">Contact Details</h3>
+        <p class="text-sm text-blue-600 mb-4">Please provide at least one contact method so people can reach you about this item.</p>
+        
+        <div class="grid sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-1">Phone Number (optional)</label>
+            <input type="tel" name="contact_phone" placeholder="+1 (555) 123-4567" class="block w-full px-3 py-2 border border-blue-200 bg-blue-50 text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200" value="<?php echo htmlspecialchars($contact_phone); ?>">
+            <?php if ($contact_phone_err): ?>
+              <p class="text-blue-600 text-sm mt-1"><?php echo $contact_phone_err; ?></p>
+            <?php endif; ?>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-1">Email Address (optional)</label>
+            <input type="email" name="contact_email" placeholder="your.email@example.com" class="block w-full px-3 py-2 border border-blue-200 bg-blue-50 text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200" value="<?php echo htmlspecialchars($contact_email); ?>">
+            <?php if ($contact_email_err): ?>
+              <p class="text-blue-600 text-sm mt-1"><?php echo $contact_email_err; ?></p>
+            <?php endif; ?>
+          </div>
         </div>
       </div>
       <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">

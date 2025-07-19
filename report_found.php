@@ -134,6 +134,29 @@ extract($vars);
                     <?php endif; ?>
                 </div>
             </div>
+            
+            <!-- Contact Details Section -->
+            <div class="mt-6 border-t border-green-200 pt-6">
+                <h3 class="text-lg font-semibold text-green-800 mb-4">Contact Details</h3>
+                <p class="text-sm text-green-600 mb-4">Please provide at least one contact method so people can reach you about this item.</p>
+                
+                <div class="grid sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-green-700 mb-1">Phone Number (optional)</label>
+                        <input type="tel" name="contact_phone" placeholder="+1 (555) 123-4567" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($contact_phone) ?>">
+                        <?php if ($contact_phone_err): ?>
+                            <p class="text-green-600 text-sm mt-1"><?= $contact_phone_err ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-green-700 mb-1">Email Address (optional)</label>
+                        <input type="email" name="contact_email" placeholder="your.email@example.com" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($contact_email) ?>">
+                        <?php if ($contact_email_err): ?>
+                            <p class="text-green-600 text-sm mt-1"><?= $contact_email_err ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
             <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-green-100 text-green-900 rounded-md hover:bg-green-200 transition">Submit Report</button>
                 <a href="dashboard.php" class="text-sm text-green-500 hover:text-green-700">← Back to Dashboard</a>
