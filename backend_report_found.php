@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'backend_report_lost.php'; // reuse auto_match_and_notify
 
 function handle_report_found($post, $files, $session) {
     $category = $description = $location = $date = $contact_phone = $contact_email = '';
@@ -73,9 +74,9 @@ function handle_report_found($post, $files, $session) {
         }
         if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err) && empty($contact_phone_err) && empty($contact_email_err)) {
             global $conn;
-            $sql = 'INSERT INTO items (user_id, type, description, location, date, contact_phone, contact_email, status) VALUES (?, "found", ?, ?, ?, ?, ?, "pending")';
+            $sql = 'INSERT INTO items (user_id, type, category, description, location, date, contact_phone, contact_email, status) VALUES (?, "found", ?, ?, ?, ?, ?, ?, "pending")';
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('isssss', $session['user_id'], $description, $location, $date, $contact_phone, $contact_email);
+            $stmt->bind_param('issssss', $session['user_id'], $category, $description, $location, $date, $contact_phone, $contact_email);
             if ($stmt->execute()) {
                 $item_id = $stmt->insert_id;
                 // Insert image if uploaded
@@ -86,6 +87,8 @@ function handle_report_found($post, $files, $session) {
                     $img_stmt->execute();
                     $img_stmt->close();
                 }
+                // Trigger automated matching & notifications
+                auto_match_and_notify($item_id, 'found');
                 $success_msg = 'Found item reported successfully!';
                 $category = $description = $location = $date = $contact_phone = $contact_email = '';
             } else {

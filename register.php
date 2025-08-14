@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $name = $email = $password = $confirm_password = '';
-$name_err = $email_err = $password_err = $confirm_password_err = $register_success = '';
+$identifier_type = $identifier_value = '';
+$name_err = $email_err = $password_err = $confirm_password_err = $identifier_type_err = $identifier_value_err = $register_success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     error_log("Registration attempt - POST data: " . print_r($_POST, true));
@@ -57,15 +58,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    if (empty($name_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err)) {
+    // Identifier validation
+    $allowed_identifier_types = ['nin','email','matric'];
+    $identifier_type = isset($_POST['identifier_type']) ? strtolower(trim($_POST['identifier_type'])) : '';
+    if (!in_array($identifier_type, $allowed_identifier_types, true)) {
+        $identifier_type_err = 'Please select a valid identifier type.';
+    }
+
+    if ($identifier_type === 'email') {
+        $identifier_value = $email;
+    } else {
+        $identifier_value = isset($_POST['identifier_value']) ? trim($_POST['identifier_value']) : '';
+        if ($identifier_type === 'nin') {
+            if (empty($identifier_value)) {
+                $identifier_value_err = 'Please enter your NIN.';
+            } elseif (!preg_match('/^[A-Za-z0-9\-]{6,20}$/', $identifier_value)) {
+                $identifier_value_err = 'NIN must be 6-20 characters (letters, numbers, dashes).';
+            }
+        } elseif ($identifier_type === 'matric') {
+            if (empty($identifier_value)) {
+                $identifier_value_err = 'Please enter your Matriculation number.';
+            } elseif (!preg_match('/^[A-Za-z0-9\/\-]{3,30}$/', $identifier_value)) {
+                $identifier_value_err = 'Matriculation number must be 3-30 characters (letters, numbers, / or -).';
+            }
+        }
+    }
+
+    // Ensure identifier is unique if provided
+    if (empty($identifier_type_err) && empty($identifier_value_err)) {
+        $sql = 'SELECT user_id FROM users WHERE identifier_value = ?';
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param('s', $identifier_value);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) {
+                $identifier_value_err = 'This identifier is already in use.';
+            }
+            $stmt->close();
+        }
+    }
+
+    if (empty($name_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err) && empty($identifier_type_err) && empty($identifier_value_err)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $sql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+        $sql = 'INSERT INTO users (name, email, password, identifier_type, identifier_value) VALUES (?, ?, ?, ?, ?)';
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             error_log("Prepare failed for insert: " . $conn->error);
             $register_success = 'Database error occurred. Please try again.';
         } else {
-            $stmt->bind_param('sss', $name, $email, $hashed_password);
+            $stmt->bind_param('sssss', $name, $email, $hashed_password, $identifier_type, $identifier_value);
             if ($stmt->execute()) {
                 session_start();
                 $_SESSION['user_id'] = $stmt->insert_id;
@@ -109,6 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="my_claims.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+          <a href="notifications.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-bell mr-1"></i>Notifications</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -132,6 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <?php if (isset($_SESSION['user_id'])): ?>
         <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+        <a href="my_claims.php" class="block text-gray-800 hover:text-black"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+        <a href="notifications.php" class="block text-gray-800 hover:text-black"><i class="fas fa-bell mr-1"></i>Notifications</a>
         <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
       <?php else: ?>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -167,6 +213,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       </div>
 
       <div class="mb-4">
+        <label class="block text-sm font-medium">Select Identifier</label>
+        <select name="identifier_type" id="identifier_type" class="mt-1 block w-full p-2 border <?= $identifier_type_err ? 'border-red-500' : 'border-gray-300' ?> rounded-md focus:ring-black focus:border-black" required>
+          <option value="">-- Select --</option>
+          <option value="nin" <?= $identifier_type === 'nin' ? 'selected' : '' ?>>National Identification Number (NIN)</option>
+          <option value="email" <?= $identifier_type === 'email' ? 'selected' : '' ?>>Email</option>
+          <option value="matric" <?= $identifier_type === 'matric' ? 'selected' : '' ?>>Matriculation Number</option>
+        </select>
+        <?php if ($identifier_type_err): ?><p class="text-sm text-red-500 mt-1"><?= $identifier_type_err ?></p><?php endif; ?>
+      </div>
+
+      <div class="mb-4" id="identifier_value_group">
+        <label class="block text-sm font-medium" id="identifier_value_label">Identifier Value</label>
+        <input type="text" name="identifier_value" id="identifier_value" value="<?= htmlspecialchars($identifier_value) ?>" placeholder="Enter your identifier" class="mt-1 block w-full p-2 border <?= $identifier_value_err ? 'border-red-500' : 'border-gray-300' ?> rounded-md focus:ring-black focus:border-black">
+        <?php if ($identifier_value_err): ?><p class="text-sm text-red-500 mt-1"><?= $identifier_value_err ?></p><?php endif; ?>
+        <p class="text-xs text-gray-500 mt-1">Used to verify identity when claiming items.</p>
+      </div>
+
+      <div class="mb-4">
         <label class="block text-sm font-medium">Password</label>
         <div class="relative">
           <input type="password" name="password" id="password" class="mt-1 block w-full p-2 border <?= $password_err ? 'border-red-500' : 'border-gray-300' ?> rounded-md focus:ring-black focus:border-black pr-10" required>
@@ -199,6 +263,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </main>
 
 <script>
+    function updateIdentifierInput() {
+      const typeSelect = document.getElementById('identifier_type');
+      const group = document.getElementById('identifier_value_group');
+      const label = document.getElementById('identifier_value_label');
+      const input = document.getElementById('identifier_value');
+      const type = typeSelect ? typeSelect.value : '';
+      if (!typeSelect) return;
+      if (type === 'email') {
+        group.classList.add('hidden');
+        input.value = '';
+      } else {
+        group.classList.remove('hidden');
+        if (type === 'nin') {
+          label.textContent = 'National Identification Number (NIN)';
+          input.placeholder = 'e.g., A12345-6789';
+        } else if (type === 'matric') {
+          label.textContent = 'Matriculation Number';
+          input.placeholder = 'e.g., CSC/2019/1234';
+        } else {
+          label.textContent = 'Identifier Value';
+          input.placeholder = 'Enter your identifier';
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', updateIdentifierInput);
+    const typeSel = document.getElementById('identifier_type');
+    if (typeSel) typeSel.addEventListener('change', updateIdentifierInput);
     const btn = document.getElementById('hamburgerBtn');
     const menu = document.getElementById('mobileMenu');
 

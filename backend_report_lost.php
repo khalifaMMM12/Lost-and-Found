@@ -73,9 +73,17 @@ function handle_report_lost($post, $files, $session) {
         }
         if (empty($category_err) && empty($description_err) && empty($location_err) && empty($date_err) && empty($image_err) && empty($contact_phone_err) && empty($contact_email_err)) {
             global $conn;
-            $sql = 'INSERT INTO items (user_id, type, description, location, date, contact_phone, contact_email, status) VALUES (?, "lost", ?, ?, ?, ?, ?, "pending")';
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param('isssss', $session['user_id'], $description, $location, $date, $contact_phone, $contact_email);
+            $sql = 'INSERT INTO items (user_id, type, category, description, location, date, contact_phone, contact_email, status) VALUES (?, "lost", ?, ?, ?, ?, ?, ?, "pending")';
+            $userId = isset($session['user_id']) ? $session['user_id'] : NULL;
+            // Use i (int) for user_id when present, and null otherwise via bind_param with null requires work-around; use dynamic SQL
+            if ($userId === NULL) {
+                $sql = 'INSERT INTO items (user_id, type, category, description, location, date, contact_phone, contact_email, status) VALUES (NULL, "lost", ?, ?, ?, ?, ?, ?, "pending")';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param('ssssss', $category, $description, $location, $date, $contact_phone, $contact_email);
+            } else {
+                $stmt = $conn->prepare('INSERT INTO items (user_id, type, category, description, location, date, contact_phone, contact_email, status) VALUES (?, "lost", ?, ?, ?, ?, ?, ?, "pending")');
+                $stmt->bind_param('issssss', $userId, $category, $description, $location, $date, $contact_phone, $contact_email);
+            }
             if ($stmt->execute()) {
                 $item_id = $stmt->insert_id;
                 // Insert image if uploaded
@@ -86,6 +94,8 @@ function handle_report_lost($post, $files, $session) {
                     $img_stmt->execute();
                     $img_stmt->close();
                 }
+                // Trigger automated matching & notifications
+                auto_match_and_notify($item_id, 'lost');
                 $success_msg = 'Lost item reported successfully!';
                 $category = $description = $location = $date = $contact_phone = $contact_email = '';
             } else {
@@ -96,4 +106,62 @@ function handle_report_lost($post, $files, $session) {
     }
     $categories = ['Electronics', 'Books', 'Clothing', 'Accessories', 'Documents', 'Other'];
     return compact('category', 'description', 'location', 'date', 'contact_phone', 'contact_email', 'category_err', 'description_err', 'location_err', 'date_err', 'image_err', 'contact_phone_err', 'contact_email_err', 'success_msg', 'error_msg', 'categories');
+}
+
+function auto_match_and_notify($new_item_id, $new_item_type) {
+    global $conn;
+    // Fetch new item details
+    $stmt = $conn->prepare('SELECT item_id, type, category, description, location, date, user_id FROM items WHERE item_id = ?');
+    $stmt->bind_param('i', $new_item_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $newItem = $result->fetch_assoc();
+    $stmt->close();
+    if (!$newItem) return;
+
+    $targetType = $new_item_type === 'lost' ? 'found' : 'lost';
+
+    // Simple matching: same category, location substring match, description keyword overlap
+    $query = "SELECT i.item_id, i.user_id, i.description, i.location, i.category FROM items i
+              WHERE i.type = ? AND i.status IN ('approved','pending')";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('s', $targetType);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $candidates = $res->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    $newDesc = strtolower($newItem['description']);
+    $newLoc = strtolower($newItem['location']);
+    $newCat = strtolower((string)$newItem['category']);
+
+    $matches = [];
+    foreach ($candidates as $cand) {
+        $score = 0;
+        if ($newCat && strtolower((string)$cand['category']) === $newCat) $score += 2;
+        if ($newLoc && strpos(strtolower($cand['location']), $newLoc) !== false) $score += 1;
+        // keyword overlap
+        $newWords = array_unique(array_filter(preg_split('/\W+/', $newDesc)));
+        $candWords = array_unique(array_filter(preg_split('/\W+/', strtolower($cand['description']))));
+        $overlap = count(array_intersect($newWords, $candWords));
+        if ($overlap >= 2) $score += 2;
+        if ($score >= 3) { // threshold
+            $matches[] = $cand;
+        }
+    }
+
+    if (empty($matches)) return;
+
+    $message = $new_item_type === 'lost'
+        ? 'A potential match for your found item has been posted.'
+        : 'A potential match for your lost item has been posted.';
+
+    foreach ($matches as $m) {
+        if (!empty($m['user_id'])) {
+            $stmt = $conn->prepare('INSERT INTO notifications (item_id, recipient_id, message) VALUES (?, ?, ?)');
+            $stmt->bind_param('iis', $new_item_id, $m['user_id'], $message);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
 }

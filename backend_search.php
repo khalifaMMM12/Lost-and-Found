@@ -11,15 +11,16 @@ function get_search_items($filters) {
     $filter_date = isset($filters['date']) ? trim($filters['date']) : '';
     $filter_location = isset($filters['location']) ? trim($filters['location']) : '';
 
-    $query = "SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, i.contact_phone, i.contact_email,
+    $query = "SELECT i.item_id, i.type, i.category, i.description, i.location, i.date, i.status, i.contact_phone, i.contact_email,
         (SELECT img.image_path FROM item_images img WHERE img.item_id = i.item_id LIMIT 1) as image
         FROM items i WHERE i.status IN ('approved', 'pending')";
     $params = [];
     $typestr = '';
     if ($filter_category) {
-        $query .= " AND i.description LIKE ?";
+        $query .= " AND (i.category = ? OR i.description LIKE ?)";
+        $params[] = $filter_category;
         $params[] = "%$filter_category%";
-        $typestr .= 's';
+        $typestr .= 'ss';
     }
     if ($filter_type) {
         $query .= " AND i.type = ?";

@@ -18,20 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (empty($email_err) && empty($password_err)) {
-        $sql = 'SELECT user_id, name, email, password, role FROM users WHERE email = ?';
+        $sql = 'SELECT user_id, name, email, password, role, identifier_type, identifier_value FROM users WHERE email = ?';
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $stmt->store_result();
         if ($stmt->num_rows == 1) {
-            $stmt->bind_result($user_id, $name, $db_email, $db_password, $role);
+            $stmt->bind_result($user_id, $name, $db_email, $db_password, $role, $identifier_type, $identifier_value);
             $stmt->fetch();
             if (password_verify($password, $db_password)) {
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['name'] = $name;
                 $_SESSION['email'] = $db_email;
                 $_SESSION['role'] = $role;
-                header('Location: dashboard.php');
+                $_SESSION['identifier_type'] = $identifier_type;
+                $_SESSION['identifier_value'] = $identifier_value;
+                // Support return URL after login
+                $return = isset($_GET['return']) ? $_GET['return'] : (isset($_POST['return']) ? $_POST['return'] : '');
+                if ($return) {
+                  header('Location: ' . $return);
+                } else {
+                  header('Location: dashboard.php');
+                }
                 exit;
             } else {
                 $login_err = 'Invalid email or password.';
@@ -67,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="my_claims.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+          <a href="notifications.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-bell mr-1"></i>Notifications</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -90,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <?php if (isset($_SESSION['user_id'])): ?>
         <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+        <a href="my_claims.php" class="block text-gray-800 hover:text-black"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+        <a href="notifications.php" class="block text-gray-800 hover:text-black"><i class="fas fa-bell mr-1"></i>Notifications</a>
         <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
       <?php else: ?>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -111,6 +123,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php endif; ?>
 
     <form id="loginForm" action="" method="post" novalidate>
+      <?php if (isset($_GET['return'])): ?>
+        <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return']) ?>">
+      <?php endif; ?>
       <div class="mb-4">
         <label for="email" class="block text-sm font-medium">Email</label>
         <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="mt-1 block w-full p-3 border <?= $email_err ? 'border-red-500' : 'border-gray-300' ?> rounded-md focus:ring-black focus:border-black" required>

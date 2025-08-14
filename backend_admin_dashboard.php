@@ -59,7 +59,8 @@ function admin_handle_actions() {
 
 function get_pending_items() {
     global $conn;
-    $sql = 'SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, img.image_path as image
+    $sql = 'SELECT i.item_id, i.type, i.description, i.location, i.date, i.status, img.image_path as image,
+                   (SELECT COUNT(*) FROM claims c WHERE c.item_id = i.item_id AND c.status = "pending") AS pending_claims
             FROM items i
             LEFT JOIN (
                 SELECT item_id, MIN(image_id) as min_image_id
@@ -81,7 +82,11 @@ function get_pending_items() {
 
 function get_users() {
     global $conn;
-    $sql = 'SELECT user_id, name, email, role FROM users ORDER BY user_id DESC';
+    $sql = 'SELECT u.user_id, u.name, u.email, u.role, u.identifier_type, u.identifier_value,
+                   (SELECT COUNT(*) FROM claims c WHERE c.user_id = u.user_id) AS claims_count,
+                   (SELECT COUNT(*) FROM items i WHERE i.user_id = u.user_id) AS reports_count
+            FROM users u
+            ORDER BY u.user_id DESC';
     $result = $conn->query($sql);
     return $result->fetch_all(MYSQLI_ASSOC);
 }

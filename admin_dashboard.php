@@ -67,6 +67,9 @@ $users = get_users();
                             </div>
                             <div class="flex gap-2 mt-auto">
                                 <a href="?approve=<?php echo $item['item_id']; ?>" class="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-center">Approve</a>
+                                <button type="button" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-center" onclick="openClaimsModal(<?php echo $item['item_id']; ?>)">
+                                    <i class="fas fa-user-check mr-1"></i> Claims (<?php echo (int)($item['pending_claims'] ?? 0); ?>)
+                                </button>
                                 <a href="?delete_item=<?php echo $item['item_id']; ?>" class="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-center" onclick="return confirm('Delete this item?');">Delete</a>
                             </div>
                         </div>
@@ -85,6 +88,8 @@ $users = get_users();
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Identifier</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Activity</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -96,9 +101,20 @@ $users = get_users();
                                 <td class="px-4 py-2"><?php echo htmlspecialchars($user['name']); ?></td>
                                 <td class="px-4 py-2"><?php echo htmlspecialchars($user['email']); ?></td>
                                 <td class="px-4 py-2"><?php echo htmlspecialchars($user['role']); ?></td>
+                                <td class="px-4 py-2 text-sm text-gray-700">
+                                    <?php echo htmlspecialchars($user['identifier_type'] ?: '-'); ?>
+                                    <?php if (!empty($user['identifier_value'])): ?>
+                                        (<?php echo htmlspecialchars($user['identifier_value']); ?>)
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-2 text-sm">
+                                    <span class="inline-block bg-gray-100 rounded px-2 py-0.5 mr-1">Claims: <?php echo (int)($user['claims_count'] ?? 0); ?></span>
+                                    <span class="inline-block bg-gray-100 rounded px-2 py-0.5">Reports: <?php echo (int)($user['reports_count'] ?? 0); ?></span>
+                                </td>
                                 <td class="px-4 py-2">
                                     <?php if ($user['role'] !== 'admin'): ?>
-                                        <a href="?delete_user=<?php echo $user['user_id']; ?>" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs" onclick="return confirm('Delete this user?');">Delete</a>
+                                        <button type="button" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs" onclick='openUserInfoModal(<?php echo json_encode($user, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>)'>Info</button>
+                                        <a href="?delete_user=<?php echo $user['user_id']; ?>" class="ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs" onclick="return confirm('Delete this user?');">Delete</a>
                                     <?php else: ?>
                                         <span class="text-gray-400 text-xs">Admin</span>
                                     <?php endif; ?>
@@ -151,6 +167,26 @@ $users = get_users();
             </div>
         </div>
     </main>
+    <div id="claimsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-auto">
+        <div class="flex items-center justify-between p-4 border-b">
+          <h3 class="text-lg font-semibold">Item Claims</h3>
+          <button class="text-gray-500 hover:text-gray-700" onclick="closeClaimsModal()">&times;</button>
+        </div>
+        <div id="claimsContent" class="p-4">
+          <p class="text-gray-500">Loading claims...</p>
+        </div>
+      </div>
+    </div>
+    <div id="userInfoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-auto">
+        <div class="flex items-center justify-between p-4 border-b">
+          <h3 class="text-lg font-semibold">User Info</h3>
+          <button class="text-gray-500 hover:text-gray-700" onclick="closeUserInfoModal()">&times;</button>
+        </div>
+        <div id="userInfoContent" class="p-4 text-sm"></div>
+      </div>
+    </div>
     <script>
         // Tab switching logic
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -172,6 +208,89 @@ $users = get_users();
                 });
             });
         });
+
+        // Claims modal
+        const claimsModal = document.getElementById('claimsModal');
+        const claimsContent = document.getElementById('claimsContent');
+
+        function openClaimsModal(itemId) {
+            claimsContent.innerHTML = '<p class="text-gray-500">Loading claims...</p>';
+            claimsModal.classList.remove('hidden');
+            claimsModal.classList.add('flex');
+            fetch('claims_api.php?item_id=' + encodeURIComponent(itemId))
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        claimsContent.innerHTML = '<p class="text-gray-500">No claims for this item.</p>';
+                        return;
+                    }
+                    const rows = data.map(c => `
+                        <div class="border rounded p-3 mb-3">
+                          <div class="flex items-center justify-between mb-2">
+                            <div class="font-semibold">Claim #${c.claim_id} • <span class="capitalize">${c.status}</span></div>
+                            <div class="text-xs text-gray-500">${c.created_at}</div>
+                          </div>
+                          <div class="grid sm:grid-cols-2 gap-2 text-sm">
+                            <div><span class="text-gray-500">Name:</span> ${c.claim_name}</div>
+                            <div><span class="text-gray-500">Email:</span> ${c.claim_email}</div>
+                            <div><span class="text-gray-500">Identifier:</span> ${c.claim_identifier_type || '-'} ${c.claim_identifier_value ? '(' + c.claim_identifier_value + ')' : ''}</div>
+                            <div><span class="text-gray-500">User ID:</span> ${c.user_id}</div>
+                          </div>
+                          <div class="mt-3 flex gap-2">
+                            <a href="claims_api.php?action=approve&claim_id=${c.claim_id}" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">Approve</a>
+                            <a href="claims_api.php?action=deny&claim_id=${c.claim_id}" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">Deny</a>
+                            <button type="button" class="px-3 py-1 bg-gray-200 rounded text-xs" onclick="toggleUserInfo(this)"><i class="fas fa-info-circle mr-1"></i>User Info</button>
+                          </div>
+                          <div class="mt-2 hidden text-sm" data-user-info>
+                            <div class="p-3 bg-gray-50 rounded">
+                              <div><span class="text-gray-500">User ID:</span> ${c.user.user_id}</div>
+                              <div><span class="text-gray-500">Name:</span> ${c.user.name}</div>
+                              <div><span class="text-gray-500">Email:</span> ${c.user.email}</div>
+                              <div><span class="text-gray-500">Identifier:</span> ${c.user.identifier_type || '-'} ${c.user.identifier_value ? '(' + c.user.identifier_value + ')' : ''}</div>
+                              <div><span class="text-gray-500">Role:</span> ${c.user.role}</div>
+                            </div>
+                          </div>
+                        </div>
+                    `).join('');
+                    claimsContent.innerHTML = rows;
+                })
+                .catch(() => {
+                    claimsContent.innerHTML = '<p class="text-red-500">Failed to load claims.</p>';
+                });
+        }
+
+        function closeClaimsModal() {
+            claimsModal.classList.add('hidden');
+            claimsModal.classList.remove('flex');
+        }
+        function toggleUserInfo(btn) {
+            const container = btn.closest('div').parentElement.querySelector('[data-user-info]');
+            if (container) container.classList.toggle('hidden');
+        }
+
+        // User info modal
+        const userInfoModal = document.getElementById('userInfoModal');
+        const userInfoContent = document.getElementById('userInfoContent');
+        function openUserInfoModal(user) {
+          const rows = `
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div><span class="text-gray-500">User ID:</span> ${user.user_id}</div>
+              <div><span class="text-gray-500">Name:</span> ${user.name}</div>
+              <div><span class="text-gray-500">Email:</span> ${user.email}</div>
+              <div><span class="text-gray-500">Role:</span> ${user.role}</div>
+              <div><span class="text-gray-500">Identifier:</span> ${user.identifier_type || '-'} ${user.identifier_value ? '(' + user.identifier_value + ')' : ''}</div>
+              <div><span class="text-gray-500">Claims:</span> ${user.claims_count || 0}</div>
+              <div><span class="text-gray-500">Reports:</span> ${user.reports_count || 0}</div>
+            </div>
+          `;
+          userInfoContent.innerHTML = rows;
+          userInfoModal.classList.remove('hidden');
+          userInfoModal.classList.add('flex');
+        }
+        function closeUserInfoModal() {
+          userInfoModal.classList.add('hidden');
+          userInfoModal.classList.remove('flex');
+        }
     </script>
 </body>
 </html>

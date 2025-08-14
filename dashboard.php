@@ -23,9 +23,11 @@ $items = get_dashboard_items();
       <div class="hidden md:flex space-x-4 items-center text-sm md:text-base">
         <a href="dashboard.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-home mr-1"></i>Dashboard</a>
         <a href="search.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-search mr-1"></i>Search</a>
+        <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <?php if (isset($_SESSION['user_id'])): ?>
-          <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="my_claims.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+          <a href="notifications.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-bell mr-1"></i>Notifications</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -44,8 +46,8 @@ $items = get_dashboard_items();
     <div id="mobileMenu" class="md:hidden overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out px-4 space-y-2">
       <a href="dashboard.php" class="block text-gray-800 hover:text-black"><i class="fas fa-home mr-1"></i>Dashboard</a>
       <a href="search.php" class="block text-gray-800 hover:text-black"><i class="fas fa-search mr-1"></i>Search</a>
+      <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
       <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
         <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
       <?php else: ?>
@@ -78,6 +80,9 @@ $items = get_dashboard_items();
               <?php echo ucfirst($item['type']); ?> Item
             </span>
             <h3 class="font-semibold text-lg text-gray-800 mb-1"><?php echo htmlspecialchars($item['description']); ?></h3>
+            <?php if (!empty($item['category'])): ?>
+              <p class="text-xs text-gray-600 mb-1"><strong>Category:</strong> <?php echo htmlspecialchars($item['category']); ?></p>
+            <?php endif; ?>
             <p class="text-sm text-gray-700 mb-1"><strong>Location:</strong> <?php echo htmlspecialchars($item['location']); ?></p>
             <p class="text-sm text-gray-600 mb-1"><strong>Date:</strong> <?php echo htmlspecialchars($item['date']); ?></p>
             
@@ -106,6 +111,12 @@ $items = get_dashboard_items();
             </div>
             
             <p class="text-xs text-gray-500 mt-2"><strong>Status:</strong> <?php echo htmlspecialchars($item['status']); ?></p>
+
+            <div class="mt-3">
+              <a href="claim.php?item_id=<?= (int)$item['item_id'] ?>" class="inline-block px-4 py-2 bg-black text-white rounded-md hover:bg-gray-900 transition">
+                <i class="fas fa-hand-paper mr-1"></i>Claim
+              </a>
+            </div>
           </div>
         </div>
       <?php endforeach; ?>

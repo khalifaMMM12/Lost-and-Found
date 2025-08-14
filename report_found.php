@@ -32,6 +32,8 @@ extract($vars);
         <?php if (isset($_SESSION['user_id'])): ?>
           <a href="report_lost.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
           <a href="report_found.php" class="text-green-700 font-semibold border-b-2 border-green-400 font-medium"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+          <a href="my_claims.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+          <a href="notifications.php" class="text-gray-800 hover:text-black font-medium transition"><i class="fas fa-bell mr-1"></i>Notifications</a>
           <a href="logout.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
         <?php else: ?>
           <a href="register.php" class="ml-2 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
@@ -55,6 +57,8 @@ extract($vars);
       <?php if (isset($_SESSION['user_id'])): ?>
         <a href="report_lost.php" class="block text-gray-800 hover:text-black"><i class="fas fa-exclamation-circle mr-1"></i>Report Lost</a>
         <a href="report_found.php" class="block text-gray-800 hover:text-black"><i class="fas fa-check-circle mr-1"></i>Report Found</a>
+        <a href="my_claims.php" class="block text-gray-800 hover:text-black"><i class="fas fa-hand-paper mr-1"></i>My Claims</a>
+        <a href="notifications.php" class="block text-gray-800 hover:text-black"><i class="fas fa-bell mr-1"></i>Notifications</a>
         <a href="logout.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
       <?php else: ?>
         <a href="register.php" class="block px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"><i class="fas fa-user-plus mr-1"></i>Sign Up</a>
