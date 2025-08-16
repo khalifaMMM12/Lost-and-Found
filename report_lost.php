@@ -142,14 +142,14 @@ extract($vars);
         
         <div class="grid sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-blue-700 mb-1">Phone Number (optional)</label>
+            <label class="block text-sm font-medium text-blue-700 mb-1">Phone Number</label>
             <input type="tel" name="contact_phone" placeholder="+1 (555) 123-4567" class="block w-full px-3 py-2 border border-blue-200 bg-blue-50 text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200" value="<?php echo htmlspecialchars($contact_phone); ?>">
             <?php if ($contact_phone_err): ?>
               <p class="text-blue-600 text-sm mt-1"><?php echo $contact_phone_err; ?></p>
             <?php endif; ?>
           </div>
           <div>
-            <label class="block text-sm font-medium text-blue-700 mb-1">Email Address (optional)</label>
+            <label class="block text-sm font-medium text-blue-700 mb-1">Email Address</label>
             <input type="email" name="contact_email" placeholder="your.email@example.com" class="block w-full px-3 py-2 border border-blue-200 bg-blue-50 text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200" value="<?php echo htmlspecialchars($contact_email); ?>">
             <?php if ($contact_email_err): ?>
               <p class="text-blue-600 text-sm mt-1"><?php echo $contact_email_err; ?></p>

@@ -1,0 +1,5 @@
+[2025-08-16 23:38:59] handle_report_found POST received; keys: ["category","date","location","description","contact_phone","contact_email"]
+[2025-08-16 23:39:09] handle_report_found POST received; keys: ["category","date","location","description","contact_phone","contact_email"]
+[2025-08-16 23:39:25] handle_report_lost POST received; keys: ["category","date","location","description","contact_phone","contact_email"]
+[2025-08-16 23:40:17] handle_report_lost POST received; keys: ["category","date","location","description","contact_phone","contact_email"]
+[2025-08-16 23:40:44] handle_report_lost POST received; keys: ["category","date","location","description","contact_phone","contact_email"]

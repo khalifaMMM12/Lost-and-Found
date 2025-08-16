@@ -90,7 +90,7 @@ extract($vars);
             <div class="grid sm:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-green-700 mb-1">Category</label>
-                    <select name="category" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
+                    <select name="category" require class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
                         <option value="">Select category</option>
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?= $cat ?>" <?= $category == $cat ? 'selected' : '' ?>><?= $cat ?></option>
@@ -102,7 +102,7 @@ extract($vars);
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-green-700 mb-1">Date Found</label>
-                    <input type="date" name="date" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($date) ?>">
+                    <input type="date" name="date" require class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($date) ?>">
                     <?php if ($date_err): ?>
                         <p class="text-green-600 text-sm mt-1"><?= $date_err ?></p>
                     <?php endif; ?>
@@ -146,14 +146,14 @@ extract($vars);
                 
                 <div class="grid sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-green-700 mb-1">Phone Number (optional)</label>
+                        <label class="block text-sm font-medium text-green-700 mb-1">Phone Number</label>
                         <input type="tel" name="contact_phone" placeholder="+1 (555) 123-4567" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($contact_phone) ?>">
                         <?php if ($contact_phone_err): ?>
                             <p class="text-green-600 text-sm mt-1"><?= $contact_phone_err ?></p>
                         <?php endif; ?>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-green-700 mb-1">Email Address (optional)</label>
+                        <label class="block text-sm font-medium text-green-700 mb-1">Email Address</label>
                         <input type="email" name="contact_email" placeholder="your.email@example.com" class="block w-full px-3 py-2 border border-green-200 bg-green-50 text-green-900 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200" value="<?= htmlspecialchars($contact_email) ?>">
                         <?php if ($contact_email_err): ?>
                             <p class="text-green-600 text-sm mt-1"><?= $contact_email_err ?></p>
